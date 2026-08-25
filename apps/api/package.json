@@ -1,0 +1,8 @@
+{
+  "name": "@media-tracker/api",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@media-tracker/shared": "workspace:*"
+  }
+}
