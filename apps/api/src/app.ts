@@ -8,6 +8,8 @@ import { requestId } from "./middleware/request-id.js";
 import { notFound } from "./middleware/not-found.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
+import { healthRouter } from "./routes/health.js";
+
 export function createApp(): express.Express {
   const app = express();
 
@@ -19,6 +21,9 @@ export function createApp(): express.Express {
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
+
+  app.use("/health", healthRouter);
+
   app.use(notFound);
   app.use(errorHandler);
 
