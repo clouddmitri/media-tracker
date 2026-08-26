@@ -22,6 +22,11 @@ export function createApp(): express.Express {
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
 
+  app.get("/slow", async (_req, res) => {
+    await new Promise((r) => setTimeout(r, 5000));
+    res.json({ done: true });
+  });
+
   app.use("/health", healthRouter);
 
   app.use(notFound);
