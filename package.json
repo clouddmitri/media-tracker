@@ -12,7 +12,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "dev": "pnpm --filter @media-tracker/api dev"
+    "dev": "pnpm --filter @media-tracker/api dev",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:reset": "docker compose down -v && docker compose up -d"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.2",
