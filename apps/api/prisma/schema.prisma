@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────
+
+enum MediaType {
+  MOVIE
+  TV
+}
+
+enum LibraryStatus {
+  WANT_TO_WATCH
+  WATCHING
+  COMPLETED
+  DROPPED
+  ON_HOLD
+}
+
+enum PipelineStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+// ─── Users ────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  displayName  String   @map("display_name") @db.VarChar(100)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  libraryEntries LibraryEntry[]
+
+  @@map("users")
+}
+
+// ─── Media items (cache of TMDB data) ─────────────────────
+
+model MediaItem {
+  id        String    @id @default(cuid())
+  tmdbId    Int       @map("tmdb_id")
+  imdbId    String?   @map("imdb_id") @db.VarChar(20)
+  mediaType MediaType @map("media_type")
+
+  title        String    @db.VarChar(500)
+  overview     String?   @db.Text
+  posterPath   String?   @map("poster_path") @db.VarChar(255)
+  backdropPath String?   @map("backdrop_path") @db.VarChar(255)
+  releaseDate  DateTime? @map("release_date") @db.Date
+  runtime      Int?
+
+  imdbRating     Decimal? @map("imdb_rating") @db.Decimal(3, 1)
+  imdbVotes      Int?     @map("imdb_votes")
+  rottenTomatoes Int?     @map("rotten_tomatoes")
+  metacritic     Int?
+  tmdbRating     Decimal? @map("tmdb_rating") @db.Decimal(3, 1)
+  tmdbVoteCount  Int?     @map("tmdb_vote_count")
+
+  syncedAt  DateTime @default(now()) @map("synced_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  libraryEntries LibraryEntry[]
+  genres         MediaItemGenre[]
+
+  @@unique([tmdbId, mediaType])
+  @@index([syncedAt])
+  @@map("media_items")
+}
+
+// ─── Genres ───────────────────────────────────────────────
+
+model Genre {
+  id     String @id @default(cuid())
+  tmdbId Int    @unique @map("tmdb_id")
+  name   String @db.VarChar(100)
+
+  mediaItems MediaItemGenre[]
+
+  @@map("genres")
+}
+
+model MediaItemGenre {
+  mediaItemId String @map("media_item_id")
+  genreId     String @map("genre_id")
+
+  mediaItem MediaItem @relation(fields: [mediaItemId], references: [id], onDelete: Cascade)
+  genre     Genre     @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([mediaItemId, genreId])
+  @@index([genreId])
+  @@map("media_item_genres")
+}
+
+// ─── Library entries ──────────────────────────────────────
+
+model LibraryEntry {
+  id          String @id @default(cuid())
+  userId      String @map("user_id")
+  mediaItemId String @map("media_item_id")
+
+  status     LibraryStatus @default(WANT_TO_WATCH)
+  userRating Decimal?      @map("user_rating") @db.Decimal(3, 1)
+  review     String?       @db.Text
+
+  startedAt   DateTime? @map("started_at") @db.Timestamptz(3)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(3)
+
+  statusChangedAt DateTime @default(now()) @map("status_changed_at") @db.Timestamptz(3)
+
+  snapshotTitle       String    @map("snapshot_title") @db.VarChar(500)
+  snapshotPosterPath  String?   @map("snapshot_poster_path") @db.VarChar(255)
+  snapshotReleaseDate DateTime? @map("snapshot_release_date") @db.Date
+  snapshotMediaType   MediaType @map("snapshot_media_type")
+  snapshotAt          DateTime  @default(now()) @map("snapshot_at") @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaItem MediaItem @relation(fields: [mediaItemId], references: [id], onDelete: Restrict)
+
+  episodeProgress EpisodeProgress[]
+
+  @@unique([userId, mediaItemId])
+  @@index([userId, status])
+  @@index([mediaItemId])
+  @@map("library_entries")
+}
+
+// ─── Episode progress ─────────────────────────────────────
+
+model EpisodeProgress {
+  id             String @id @default(cuid())
+  libraryEntryId String @map("library_entry_id")
+
+  seasonNumber  Int      @map("season_number")
+  episodeNumber Int      @map("episode_number")
+  watchedAt     DateTime @default(now()) @map("watched_at") @db.Timestamptz(3)
+
+  libraryEntry LibraryEntry @relation(fields: [libraryEntryId], references: [id], onDelete: Cascade)
+
+  @@unique([libraryEntryId, seasonNumber, episodeNumber])
+  @@index([libraryEntryId])
+  @@map("episode_progress")
+}
+
+// ─── Pipeline runs ────────────────────────────────────────
+
+model PipelineRun {
+  id      String         @id @default(cuid())
+  jobType String         @map("job_type") @db.VarChar(100)
+  status  PipelineStatus
+
+  recordsProcessed Int     @default(0) @map("records_processed")
+  recordsFailed    Int     @default(0) @map("records_failed")
+  errorDetail      String? @map("error_detail") @db.Text
+
+  startedAt  DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
+  finishedAt DateTime? @map("finished_at") @db.Timestamptz(3)
+
+  @@index([jobType, startedAt])
+  @@map("pipeline_runs")
+}

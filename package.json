@@ -34,6 +34,14 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.68.0"
   },
+  "pnpm": {
+    "overrides": {
+      "typescript": "^6.0.0",
+      "prisma": "^7",
+      "@prisma/client": "^7",
+      "@prisma/adapter-pg": "^7"
+    }
+  },
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix",

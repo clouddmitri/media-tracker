@@ -12,7 +12,9 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ["apps/api/prisma.config.ts"]
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
