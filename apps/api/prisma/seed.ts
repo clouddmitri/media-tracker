@@ -98,11 +98,11 @@ async function main(): Promise<void> {
         ? faker.number.int({ min: 80, max: 180 })
         : faker.number.int({ min: 20, max: 60 }),
       imdbRating: maybe(faker.number.float({ min: 3, max: 9.5, fractionDigits: 1 }), 0.15),
-      imdbVotes: maybe(faker.number.int({ min: 500, max: 2_000_000 }), 0.15),
+      imdbVotes: maybe(faker.number.int({ min: 500, max: 2000000 }), 0.15),
       rottenTomatoes: maybe(faker.number.int({ min: 5, max: 100 }), 0.3),
       metacritic: maybe(faker.number.int({ min: 10, max: 100 }), 0.4),
       tmdbRating: faker.number.float({ min: 3, max: 9, fractionDigits: 1 }),
-      tmdbVoteCount: faker.number.int({ min: 10, max: 30_000 }),
+      tmdbVoteCount: faker.number.int({ min: 10, max: 30000 }),
       syncedAt: faker.date.recent({ days: 30 }),
     };
   });
