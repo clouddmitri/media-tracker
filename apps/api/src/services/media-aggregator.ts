@@ -5,6 +5,9 @@ import { OmdbConfigError } from "./omdb/index.js";
 import { HttpError } from "../lib/http-errors.js";
 import { getErrorMessage } from "../lib/errors.js";
 import type { SearchItem } from "./tmdb/index.js";
+import * as reviewRepo from "../repositories/external-review.repository.js";
+import type { ExternalReviewDTO } from "@media-tracker/shared";
+import * as tmdb from "./tmdb/index.js";
 
 async function fetchScoresSafely(
   imdbId: string | null,
@@ -97,4 +100,40 @@ export async function trending(
   correlationId?: string,
 ): Promise<SearchItem[]> {
   return cached.getTrending(mediaType, window, correlationId);
+}
+
+export async function fetchReviews(
+  mediaItemId: string,
+  tmdbId: number,
+  mediaType: MediaTypeValue,
+  correlationId?: string,
+): Promise<ExternalReviewDTO[]> {
+  try {
+    const reviews = await tmdb.getReviews(tmdbId, mediaType, correlationId);
+    if (reviews.length > 0) {
+      await reviewRepo.upsertMany(
+        mediaItemId,
+        reviews.map((r) => ({
+          externalId: r.externalId,
+          author: r.author,
+          content: r.content,
+          rating: r.rating,
+          url: r.url,
+          publishedAt: r.publishedAt,
+        })),
+      );
+    }
+  } catch (err) {
+    console.warn(
+      JSON.stringify({
+        level: "warn",
+        msg: "review fetch failed, serving stored reviews",
+        tmdbId,
+        error: getErrorMessage(err),
+        correlationId,
+      }),
+    );
+  }
+
+  return reviewRepo.findByMediaItem(mediaItemId, 10);
 }
