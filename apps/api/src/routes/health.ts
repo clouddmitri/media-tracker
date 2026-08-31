@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { pool } from "../lib/db.js";
+import { prisma } from "../lib/db.js";
 import { redis } from "../lib/redis.js";
 import { getErrorMessage } from "../lib/errors.js";
 
@@ -28,7 +28,7 @@ type CheckResult = { status: "up" } | { status: "down"; error: string };
 
 async function checkPostgres(): Promise<CheckResult> {
   try {
-    await withTimeout(pool.query("SELECT 1"), CHECK_TIMEOUT_MS);
+    await withTimeout(prisma.$queryRaw`SELECT 1`, CHECK_TIMEOUT_MS);
     return { status: "up" };
   } catch (err) {
     return { status: "down", error: getErrorMessage(err) };

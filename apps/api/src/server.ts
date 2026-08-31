@@ -1,7 +1,7 @@
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
 import { setAcceptingTraffic } from "./routes/health.js";
-import { pool } from "./lib/db.js";
+import { prisma } from "./lib/db.js";
 import { redis } from "./lib/redis.js";
 import { getErrorMessage } from "./lib/errors.js";
 
@@ -48,8 +48,8 @@ async function shutdown(signal: string): Promise<void> {
     });
     console.log("HTTP server closed");
 
-    await pool.end();
-    console.log("Postgres pool closed");
+    await prisma.$disconnect();
+    console.log("Prisma disconnected");
 
     redis.disconnect();
     console.log("Redis disconnected");
