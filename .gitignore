@@ -11,3 +11,5 @@ cdk.out/
 
 .DS_Store
 *.log
+
+apps/api/src/generated/
