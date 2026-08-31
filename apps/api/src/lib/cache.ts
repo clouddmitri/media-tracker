@@ -30,11 +30,20 @@ async function recordHit(kind: "hit" | "miss" | "stale"): Promise<void> {
   }
 }
 
+function reviveDates(_key: string, value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  if (value.length < 10 || value.length > 30) return value;
+  if (!value.startsWith("2") && !value.startsWith("1")) return value;
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date;
+}
+
 async function readEnvelope<T>(key: string): Promise<CacheEnvelope<T> | null> {
   try {
     const raw = await redis.get(key);
     if (raw === null) return null;
-    return JSON.parse(raw) as CacheEnvelope<T>;
+    return JSON.parse(raw, reviveDates) as CacheEnvelope<T>;
   } catch (err) {
     console.warn(`cache read failed for ${key}: ${getErrorMessage(err)}`);
     return null;
