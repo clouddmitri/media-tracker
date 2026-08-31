@@ -7,6 +7,9 @@ const envSchema = z.object({
   DATABASE_URL: z.url(),
   REDIS_URL: z.url(),
   CORS_ORIGIN: z.url(),
+  TMDB_API_KEY: z.string().min(1),
+  TMDB_READ_TOKEN: z.string().min(1),
+  OMDB_API_KEY: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

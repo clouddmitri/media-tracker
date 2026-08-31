@@ -17,6 +17,10 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
     "docker:reset": "docker compose down -v && docker compose up -d",
+    "db:migrate": "pnpm --filter @media-tracker/api db:migrate",
+    "db:seed": "pnpm --filter @media-tracker/api db:seed",
+    "db:reset": "pnpm --filter @media-tracker/api db:reset",
+    "db:studio": "pnpm --filter @media-tracker/api db:studio",
     "postinstall": "pnpm --filter @media-tracker/api exec prisma generate"
   },
   "devDependencies": {

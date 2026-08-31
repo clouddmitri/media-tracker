@@ -37,3 +37,13 @@ export interface Page<T> {
   items: T[];
   nextCursor: string | null;
 }
+
+export interface ExternalReviewDTO {
+  id: string;
+  author: string;
+  content: string;
+  rating: number | null;
+  url: string;
+  publishedAt: Date | null;
+  source: "TMDB";
+}

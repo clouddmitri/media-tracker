@@ -71,6 +71,7 @@ model MediaItem {
 
   libraryEntries LibraryEntry[]
   genres         MediaItemGenre[]
+  externalReviews ExternalReview[]
 
   @@unique([tmdbId, mediaType])
   @@index([syncedAt])
@@ -170,4 +171,28 @@ model PipelineRun {
 
   @@index([jobType, startedAt])
   @@map("pipeline_runs")
+}
+
+enum ReviewSource {
+  TMDB
+}
+
+model ExternalReview {
+  id          String       @id @default(cuid())
+  mediaItemId String       @map("media_item_id")
+  source      ReviewSource
+  externalId  String       @map("external_id") @db.VarChar(100)
+
+  author      String    @db.VarChar(200)
+  content     String    @db.Text
+  rating      Decimal?  @db.Decimal(3, 1)
+  url         String    @db.VarChar(500)
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(3)
+  fetchedAt   DateTime  @default(now()) @map("fetched_at") @db.Timestamptz(3)
+
+  mediaItem MediaItem @relation(fields: [mediaItemId], references: [id], onDelete: Cascade)
+
+  @@unique([source, externalId])
+  @@index([mediaItemId, publishedAt])
+  @@map("external_reviews")
 }
