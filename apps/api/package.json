@@ -21,7 +21,7 @@
     "ioredis": "^6.0.0",
     "opossum": "^10.0.0",
     "pg": "^8.23.0",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.6.0",
