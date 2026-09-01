@@ -10,6 +10,9 @@ const envSchema = z.object({
   TMDB_API_KEY: z.string().min(1),
   TMDB_READ_TOKEN: z.string().min(1),
   OMDB_API_KEY: z.string().min(1),
+  JWT_ACCESS_SECRET: z.string().min(32),
+  ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
+  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
 });
 
 export type Env = z.infer<typeof envSchema>;
