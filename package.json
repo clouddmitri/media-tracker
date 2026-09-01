@@ -29,7 +29,7 @@
     "@eslint/js": "^10.0.1",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.4",
     "@types/node": "^26.2.0",
-    "eslint": "^10.9.0",
+    "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-security": "^4.0.1",
     "husky": "^9.1.7",
