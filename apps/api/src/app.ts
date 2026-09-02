@@ -9,6 +9,7 @@ import { notFound } from "./middleware/not-found.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
 import { healthRouter } from "./routes/health.js";
+import { authRouter } from "./routes/auth.js";
 
 import { ajShield } from "./lib/arcjet.js";
 import { protect } from "./middleware/arcjet.js";
@@ -28,6 +29,7 @@ export function createApp(): express.Express {
   app.use(protect(ajShield, { onError: "allow" }));
 
   app.use("/health", healthRouter);
+  app.use("/api/v1/auth", authRouter);
 
   app.use(notFound);
   app.use(errorHandler);
