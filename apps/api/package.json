@@ -11,7 +11,9 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@arcjet/node": "^1.11.0",
     "@media-tracker/shared": "workspace:*",
+    "@node-rs/argon2": "^2.2.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "cookie-parser": "^1.4.7",
@@ -19,6 +21,7 @@
     "express": "^5.2.1",
     "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
+    "jose": "^6.2.10",
     "opossum": "^10.0.0",
     "pg": "^8.23.0",
     "zod": "^4.4.3"
