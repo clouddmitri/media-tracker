@@ -12,3 +12,10 @@ allowBuilds:
   "@prisma/engines": true
   esbuild: true
   prisma: true
+
+overrides:
+  typescript: "^6.0.0"
+  prisma: "^7"
+  "@prisma/client": "^7"
+  "@prisma/adapter-pg": "^7"
+  qs: "^6.16.0"
