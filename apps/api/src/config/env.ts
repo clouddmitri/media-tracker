@@ -13,6 +13,7 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32),
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
+  ARCJET_KEY: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

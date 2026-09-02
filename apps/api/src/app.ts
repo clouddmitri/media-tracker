@@ -10,6 +10,9 @@ import { errorHandler } from "./middleware/error-handler.js";
 
 import { healthRouter } from "./routes/health.js";
 
+import { ajShield } from "./lib/arcjet.js";
+import { protect } from "./middleware/arcjet.js";
+
 export function createApp(): express.Express {
   const app = express();
 
@@ -21,6 +24,8 @@ export function createApp(): express.Express {
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
+
+  app.use(protect(ajShield, { onError: "allow" }));
 
   app.use("/health", healthRouter);
 

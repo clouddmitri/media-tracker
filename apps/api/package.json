@@ -11,6 +11,7 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@arcjet/node": "^1.11.0",
     "@media-tracker/shared": "workspace:*",
     "@node-rs/argon2": "^2.2.0",
     "@prisma/adapter-pg": "^7.10.0",
