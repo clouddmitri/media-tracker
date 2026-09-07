@@ -113,6 +113,7 @@ model LibraryEntry {
   status     LibraryStatus @default(WANT_TO_WATCH)
   userRating Decimal?      @map("user_rating") @db.Decimal(3, 1)
   review     String?       @db.Text
+  version    Int           @default(0)
 
   startedAt   DateTime? @map("started_at") @db.Timestamptz(3)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(3)

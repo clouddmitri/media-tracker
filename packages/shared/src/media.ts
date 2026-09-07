@@ -23,6 +23,7 @@ export interface LibraryEntryDTO {
   id: string;
   mediaItemId: string;
   status: LibraryStatusValue;
+  version: number;
   userRating: number | null;
   review: string | null;
   startedAt: Date | null;

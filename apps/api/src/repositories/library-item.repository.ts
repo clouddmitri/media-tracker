@@ -7,6 +7,7 @@ import type {
 import { prisma } from "../lib/db.js";
 import { toNumber } from "../lib/decimal.js";
 import type { LibraryEntry } from "../generated/prisma/client.js";
+import type { LIBRARY_SORT_FIELDS } from "@media-tracker/shared";
 
 function toDTO(row: LibraryEntry): LibraryEntryDTO {
   return {
@@ -18,6 +19,7 @@ function toDTO(row: LibraryEntry): LibraryEntryDTO {
     startedAt: row.startedAt,
     completedAt: row.completedAt,
     statusChangedAt: row.statusChangedAt,
+    version: row.version,
     snapshotTitle: row.snapshotTitle,
     snapshotPosterPath: row.snapshotPosterPath,
     snapshotMediaType: row.snapshotMediaType,
@@ -34,9 +36,20 @@ export async function findByUserAndMediaItem(
   return row ? toDTO(row) : null;
 }
 
+export async function findByIdForUser(id: string, userId: string): Promise<LibraryEntryDTO | null> {
+  const row = await prisma.libraryEntry.findFirst({
+    where: { id, userId },
+  });
+  return row ? toDTO(row) : null;
+}
 export interface LibraryFilters {
   status?: LibraryStatusValue;
   mediaType?: MediaTypeValue;
+}
+
+export interface LibrarySort {
+  field: (typeof LIBRARY_SORT_FIELDS)[number];
+  direction: "asc" | "desc";
 }
 
 export async function listByUser(
@@ -44,6 +57,7 @@ export async function listByUser(
   filters: LibraryFilters,
   cursor: string | undefined,
   limit: number,
+  sort: LibrarySort = { field: "statusChangedAt", direction: "desc" },
 ): Promise<Page<LibraryEntryDTO>> {
   const rows = await prisma.libraryEntry.findMany({
     where: {
@@ -51,7 +65,7 @@ export async function listByUser(
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.mediaType ? { snapshotMediaType: filters.mediaType } : {}),
     },
-    orderBy: [{ statusChangedAt: "desc" }, { id: "desc" }],
+    orderBy: [{ [sort.field]: sort.direction }, { id: sort.direction }],
     take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
   });
@@ -91,6 +105,7 @@ export interface UpdateLibraryEntryInput {
   status?: LibraryStatusValue;
   userRating?: number | null;
   review?: string | null;
+  expectedVersion?: number;
 }
 
 export async function update(
@@ -103,24 +118,34 @@ export async function update(
   });
   if (!existing) return null;
 
-  const statusChanged = input.status !== undefined && input.status !== existing.status;
+  const { expectedVersion, ...fields } = input;
 
+  const statusChanged = fields.status !== undefined && fields.status !== existing.status;
   const now = new Date();
 
-  const row = await prisma.libraryEntry.update({
-    where: { id },
+  const result = await prisma.libraryEntry.updateMany({
+    where: {
+      id,
+      userId,
+      ...(expectedVersion !== undefined ? { version: expectedVersion } : {}),
+    },
     data: {
-      ...input,
+      ...fields,
+      version: { increment: 1 },
       ...(statusChanged ? { statusChangedAt: now } : {}),
-      ...(statusChanged && input.status === "COMPLETED" && !existing.completedAt
+      ...(statusChanged && fields.status === "COMPLETED" && existing.completedAt === null
         ? { completedAt: now }
         : {}),
-      ...(statusChanged && input.status === "WATCHING" && !existing.startedAt
+      ...(statusChanged && fields.status === "WATCHING" && existing.startedAt === null
         ? { startedAt: now }
         : {}),
     },
   });
-  return toDTO(row);
+
+  if (result.count === 0) return null;
+
+  const updated = await prisma.libraryEntry.findUniqueOrThrow({ where: { id } });
+  return toDTO(updated);
 }
 
 export async function remove(id: string, userId: string): Promise<boolean> {
