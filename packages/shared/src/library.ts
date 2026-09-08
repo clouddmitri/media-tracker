@@ -45,6 +45,12 @@ export const listLibrarySchema = z.object({
   order: z.enum(["asc", "desc"]).default("desc"),
 });
 
+export const episodeParamsSchema = z.object({
+  season: z.coerce.number().int().min(0).max(100),
+  episode: z.coerce.number().int().min(1).max(1000),
+});
+
 export type AddToLibraryInput = z.infer<typeof addToLibrarySchema>;
 export type UpdateLibraryEntryInput = z.infer<typeof updateLibraryEntrySchema>;
 export type ListLibraryQuery = z.infer<typeof listLibrarySchema>;
+export type EpisodeParamsInput = z.infer<typeof episodeParamsSchema>;

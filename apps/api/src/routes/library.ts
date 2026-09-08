@@ -3,6 +3,7 @@ import {
   addToLibrarySchema,
   listLibrarySchema,
   updateLibraryEntrySchema,
+  episodeParamsSchema,
 } from "@media-tracker/shared";
 import * as libraryService from "../services/library-service.js";
 import { nextStates } from "../services/library-state.js";
@@ -90,6 +91,76 @@ libraryRouter.delete("/:id", async (req, res) => {
   try {
     await libraryService.removeEntry(requireUser(req).id, id);
     res.status(204).end();
+  } catch (err) {
+    if (!handleLibraryError(err, req, res)) throw err;
+  }
+});
+
+libraryRouter.put("/:id/episodes/:season/:episode", async (req, res) => {
+  const id = req.params.id;
+  const parsed = episodeParamsSchema.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: "Bad Request",
+      message: parsed.error.issues[0]?.message ?? "Invalid episode parameters",
+      requestId: req.id,
+    });
+    return;
+  }
+
+  try {
+    const progress = await libraryService.markEpisodeWatched(
+      requireUser(req).id,
+      id,
+      parsed.data.season,
+      parsed.data.episode,
+    );
+    res.json({ progress });
+  } catch (err) {
+    if (!handleLibraryError(err, req, res)) throw err;
+  }
+});
+
+libraryRouter.delete("/:id/episodes/:season/:episode", async (req, res) => {
+  const id = req.params.id;
+  const parsed = episodeParamsSchema.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: "Bad Request",
+      message: parsed.error.issues[0]?.message ?? "Invalid episode parameters",
+      requestId: req.id,
+    });
+    return;
+  }
+
+  try {
+    const progress = await libraryService.markEpisodeUnwatched(
+      requireUser(req).id,
+      id,
+      parsed.data.season,
+      parsed.data.episode,
+    );
+    res.json({ progress });
+  } catch (err) {
+    if (!handleLibraryError(err, req, res)) throw err;
+  }
+});
+
+libraryRouter.get("/:id/progress", async (req, res) => {
+  const id = req.params.id;
+  const parsed = episodeParamsSchema.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: "Bad Request",
+      message: parsed.error.issues[0]?.message ?? "Invalid episode parameters",
+      requestId: req.id,
+    });
+    return;
+  }
+
+  try {
+    const progress = await libraryService.getProgress(requireUser(req).id, id);
+    res.json({ progress });
   } catch (err) {
     if (!handleLibraryError(err, req, res)) throw err;
   }

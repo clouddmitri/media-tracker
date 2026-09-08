@@ -70,6 +70,9 @@ model MediaItem {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
+  totalSeasons  Int? @map("total_seasons")
+  totalEpisodes Int? @map("total_episodes")
+
   libraryEntries LibraryEntry[]
   genres         MediaItemGenre[]
   externalReviews ExternalReview[]

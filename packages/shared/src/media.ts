@@ -17,6 +17,8 @@ export interface MediaItemDTO {
   metacritic: number | null;
   tmdbRating: number | null;
   syncedAt: Date;
+  totalSeasons: number | null;
+  totalEpisodes: number | null;
 }
 
 export interface LibraryEntryDTO {

@@ -19,6 +19,8 @@ function toDTO(row: MediaItem): MediaItemDTO {
     metacritic: row.metacritic,
     tmdbRating: toNumber(row.tmdbRating),
     syncedAt: row.syncedAt,
+    totalSeasons: row.totalSeasons,
+    totalEpisodes: row.totalEpisodes,
   };
 }
 
@@ -54,6 +56,8 @@ export interface UpsertMediaItemInput {
   metacritic?: number | null;
   tmdbRating?: number | null;
   tmdbVoteCount?: number | null;
+  totalSeasons?: number | null;
+  totalEpisodes?: number | null;
 }
 
 export async function upsertFromTmdb(input: UpsertMediaItemInput): Promise<MediaItemDTO> {

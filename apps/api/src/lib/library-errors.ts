@@ -3,6 +3,7 @@ import {
   AlreadyInLibraryError,
   EntryNotFoundError,
   MediaNotFoundError,
+  NotATvShowError,
   StaleVersionError,
 } from "../services/library-service.js";
 import { IllegalTransitionError } from "../services/library-state.js";
@@ -43,6 +44,11 @@ export function handleLibraryError(err: unknown, req: Request, res: Response): b
       hint: "Fetch the entry again and retry with the current version.",
       ...base,
     });
+    return true;
+  }
+
+  if (err instanceof NotATvShowError) {
+    res.status(400).json({ error: "Bad Request", message: err.message, ...base });
     return true;
   }
 

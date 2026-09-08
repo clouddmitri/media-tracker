@@ -9,6 +9,8 @@ import * as libraryRepo from "../repositories/library-item.repository.js";
 import * as agg from "./media-aggregator.js";
 import { assertTransition } from "./library-state.js";
 import { Prisma } from "../generated/prisma/client.js";
+import * as episodeRepo from "../repositories/episode-progress.repository.js";
+import * as mediaItemRepo from "../repositories/media-item.repository.js";
 
 export class MediaNotFoundError extends Error {
   constructor(tmdbId: number) {
@@ -125,4 +127,75 @@ export async function updateEntry(
 export async function removeEntry(userId: string, entryId: string): Promise<void> {
   const removed = await libraryRepo.remove(entryId, userId);
   if (!removed) throw new EntryNotFoundError();
+}
+
+export class NotATvShowError extends Error {
+  constructor() {
+    super("Episode progress is only tracked for TV shows");
+    this.name = "NotATvShowError";
+  }
+}
+
+export interface ProgressSummary {
+  watched: number;
+  total: number | null;
+  percentage: number | null;
+  bySeason: { seasonNumber: number; watched: number }[];
+  episodes: episodeRepo.EpisodeProgressDTO[];
+}
+
+export async function markEpisodeWatched(
+  userId: string,
+  entryId: string,
+  seasonNumber: number,
+  episodeNumber: number,
+): Promise<ProgressSummary> {
+  const entry = await libraryRepo.findByIdForUser(entryId, userId);
+  if (entry === null) throw new EntryNotFoundError();
+  if (entry.snapshotMediaType !== "TV") throw new NotATvShowError();
+
+  await episodeRepo.markWatched(entryId, seasonNumber, episodeNumber);
+
+  if (entry.status === "WANT_TO_WATCH") {
+    await libraryRepo.update(entryId, userId, { status: "WATCHING" });
+  }
+
+  return getProgress(userId, entryId);
+}
+
+export async function markEpisodeUnwatched(
+  userId: string,
+  entryId: string,
+  seasonNumber: number,
+  episodeNumber: number,
+): Promise<ProgressSummary> {
+  const entry = await libraryRepo.findByIdForUser(entryId, userId);
+  if (entry === null) throw new EntryNotFoundError();
+  if (entry.snapshotMediaType !== "TV") throw new NotATvShowError();
+
+  await episodeRepo.markUnwatched(entryId, seasonNumber, episodeNumber);
+  return getProgress(userId, entryId);
+}
+
+export async function getProgress(userId: string, entryId: string): Promise<ProgressSummary> {
+  const entry = await libraryRepo.findByIdForUser(entryId, userId);
+  if (entry === null) throw new EntryNotFoundError();
+  if (entry.snapshotMediaType !== "TV") throw new NotATvShowError();
+
+  const [watched, bySeason, episodes, mediaItem] = await Promise.all([
+    episodeRepo.countForEntry(entryId),
+    episodeRepo.countBySeason(entryId),
+    episodeRepo.listForEntry(entryId),
+    mediaItemRepo.findByTmdbId(Number(entry.mediaItemId), "TV"),
+  ]);
+
+  const total = mediaItem?.totalEpisodes ?? null;
+
+  return {
+    watched,
+    total,
+    percentage: total === null || total === 0 ? null : Math.round((watched / total) * 1000) / 10,
+    bySeason,
+    episodes,
+  };
 }
