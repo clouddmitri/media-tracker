@@ -11,6 +11,7 @@ import { assertTransition } from "./library-state.js";
 import { Prisma } from "../generated/prisma/client.js";
 import * as episodeRepo from "../repositories/episode-progress.repository.js";
 import * as mediaItemRepo from "../repositories/media-item.repository.js";
+import * as statsRepo from "../repositories/stats.repository.js";
 
 export class MediaNotFoundError extends Error {
   constructor(tmdbId: number) {
@@ -194,8 +195,15 @@ export async function getProgress(userId: string, entryId: string): Promise<Prog
   return {
     watched,
     total,
-    percentage: total === null || total === 0 ? null : Math.round((watched / total) * 1000) / 10,
+    percentage:
+      total === null || total === 0
+        ? null
+        : Math.min(100, Math.round((watched / total) * 1000) / 10),
     bySeason,
     episodes,
   };
+}
+
+export async function getStats(userId: string) {
+  return await statsRepo.getLibraryStats(userId);
 }

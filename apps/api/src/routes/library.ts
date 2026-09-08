@@ -53,6 +53,11 @@ libraryRouter.get("/", async (req, res) => {
   });
 });
 
+libraryRouter.get("/stats", async (req, res) => {
+  const stats = await libraryService.getStats(requireUser(req).id);
+  res.json({ stats });
+});
+
 libraryRouter.get("/:id", async (req, res) => {
   const id = req.params.id;
 
