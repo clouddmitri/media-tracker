@@ -8,6 +8,7 @@ import type {
 import * as libraryRepo from "../repositories/library-item.repository.js";
 import * as agg from "./media-aggregator.js";
 import { assertTransition } from "./library-state.js";
+import { Prisma } from "../generated/prisma/client.js";
 
 export class MediaNotFoundError extends Error {
   constructor(tmdbId: number) {
@@ -59,15 +60,22 @@ export async function addToLibrary(
     throw new AlreadyInLibraryError();
   }
 
-  return libraryRepo.create({
-    userId,
-    mediaItemId: mediaItem.id,
-    status: input.status,
-    snapshotTitle: mediaItem.title,
-    snapshotPosterPath: mediaItem.posterPath,
-    snapshotReleaseDate: mediaItem.releaseDate,
-    snapshotMediaType: mediaItem.mediaType,
-  });
+  try {
+    return await libraryRepo.create({
+      userId,
+      mediaItemId: mediaItem.id,
+      status: input.status,
+      snapshotTitle: mediaItem.title,
+      snapshotPosterPath: mediaItem.posterPath,
+      snapshotReleaseDate: mediaItem.releaseDate,
+      snapshotMediaType: mediaItem.mediaType,
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      throw new AlreadyInLibraryError();
+    }
+    throw err;
+  }
 }
 
 export async function listEntries(
