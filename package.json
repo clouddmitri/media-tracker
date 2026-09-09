@@ -21,7 +21,12 @@
     "db:seed": "pnpm --filter @media-tracker/api db:seed",
     "db:reset": "pnpm --filter @media-tracker/api db:reset",
     "db:studio": "pnpm --filter @media-tracker/api db:studio",
-    "postinstall": "pnpm --filter @media-tracker/api exec prisma generate"
+    "postinstall": "pnpm --filter @media-tracker/api exec prisma generate",
+    "test": "pnpm --filter @media-tracker/api exec vitest run",
+    "test:unit": "pnpm --filter @media-tracker/api exec vitest run --project unit",
+    "test:integration": "pnpm --filter @media-tracker/api exec vitest run --project integration",
+    "test:watch": "pnpm --filter @media-tracker/api exec vitest --project unit",
+    "test:coverage": "pnpm --filter @media-tracker/api exec vitest run --coverage"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.2",
