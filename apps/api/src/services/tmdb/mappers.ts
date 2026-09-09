@@ -41,6 +41,8 @@ export function mapTvDetails(raw: TmdbTvDetails): UpsertMediaItemInput {
     runtime: raw.episode_run_time?.[0] ?? null,
     tmdbRating: raw.vote_average,
     tmdbVoteCount: raw.vote_count,
+    totalSeasons: raw.number_of_seasons,
+    totalEpisodes: raw.number_of_episodes,
   };
 }
 
