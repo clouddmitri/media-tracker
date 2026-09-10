@@ -13,5 +13,3 @@ cdk.out/
 *.log
 
 apps/api/src/generated/
-
-coverage
